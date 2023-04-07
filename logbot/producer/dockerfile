@@ -1,0 +1,26 @@
+# Use ROS Foxy as base image
+FROM ros:foxy
+
+# Update and install necessary packages
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Keras and TensorFlow
+RUN pip3 install keras tensorflow
+
+# Copy the trained model to the container
+COPY trained_model.h5 /app/trained_model.h5
+
+# Copy the Python script to the container
+COPY app.py /app/app.py
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Set the ROS environment variables
+ENV ROS_DISTRO foxy
+
+# Run the Python script
+CMD ["python3", "app.py"]

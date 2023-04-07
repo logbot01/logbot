@@ -1,0 +1,22 @@
+# Use the ROS: Foxy image as base image
+FROM ros:foxy
+
+# Update and install necessary packages
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install required Python packages
+RUN pip3 install numpy matplotlib pygame
+
+# Copy the project files to the container
+COPY astar.py /app/astar.py
+COPY map.txt /app/map.txt
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Run the Python script
+CMD ["python3", "astar.py"]
+

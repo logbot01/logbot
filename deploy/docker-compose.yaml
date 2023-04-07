@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+
+  mysql:
+    build: ./logbot/mysql
+    ports:
+      - "${MYSQL_PORT}:3306"
+      - "${MYSQL_PORT2}:33060"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./deploy/config.env:/config.env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    command: --init-file /config.env
+    networks:
+      logbot_network:
+        ipv4_address: ${MYSQL_IP}
+
+  keras:
+    build: ./logbot/consumer
+    ports:
+      - "${KERAS_PORT}:5000"
+      - "${KERAS_PORT2}:6000"
+    volumes:
+      - keras_model:/app/models
+      - ./deploy/config.env:/config.env
+    environment:
+      MYSQL_HOST: ${MYSQL_IP}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    networks:
+      logbot_network:
+        ipv4_address: ${KERAS_IP}
+
+  astar:
+    build: ./logbot/producer
+    ports:
+      - "${ASTAR_PORT}:7000"
+    volumes:
+      - astar_data:/app/data
+      - ./deploy/config.env:/config.env
+    environment:
+      MYSQL_HOST: ${MYSQL_IP}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    networks:
+      logbot_network:
+        ipv4_address: ${ASTAR_IP}
+
+networks:
+  logbot_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: ${SUBNET}
+
+volumes:
+  mysql_data:
+  keras_model:
+  astar_data:
